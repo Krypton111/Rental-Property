@@ -63,10 +63,12 @@ Public Class TenantsForm
     Private btnUpdate As Button
     Private btnDelete As Button
     Private btnClear As Button
+    Private btnPolicies As Button
 
     Private dgvTenants As DataGridView
 
     Private selectedTenantID As Integer = 0
+    Private policiesAcknowledged As Boolean = False
 
 
     '==========================================================
@@ -221,11 +223,24 @@ Public Class TenantsForm
         Me.Controls.Add(btnRefresh)
 
 
+        btnPolicies =
+            CreateButton(
+                "Policies & Requirements",
+                New Point(595, 118),
+                New Size(190, 36),
+                Sage
+            )
+
+        Me.Controls.Add(btnPolicies)
+
         AddHandler btnSearch.Click,
             AddressOf SearchClicked
 
         AddHandler btnRefresh.Click,
             AddressOf RefreshClicked
+
+        AddHandler btnPolicies.Click,
+            AddressOf PoliciesClicked
 
 
         '======================================================
@@ -1114,6 +1129,147 @@ Public Class TenantsForm
 
 
     '==========================================================
+    ' TENANT POLICIES AND RENTAL REQUIREMENTS
+    '==========================================================
+
+    Private Sub PoliciesClicked(
+        sender As Object,
+        e As EventArgs
+    )
+
+        ShowPoliciesDialog()
+
+    End Sub
+
+
+    Private Function ShowPoliciesDialog() As Boolean
+
+        Using policyForm As New Form()
+
+            policyForm.Text = "Rental Policies & Requirements"
+            policyForm.StartPosition = FormStartPosition.CenterParent
+            policyForm.Size = New Size(720, 650)
+            policyForm.MinimumSize = New Size(650, 580)
+            policyForm.BackColor = Cream
+            policyForm.Font = New Font("Segoe UI", 9.5F)
+            policyForm.FormBorderStyle = FormBorderStyle.FixedDialog
+            policyForm.MaximizeBox = False
+            policyForm.MinimizeBox = False
+            policyForm.ShowInTaskbar = False
+
+            Dim title As New Label()
+            title.Text = "RENTAL POLICIES & REQUIREMENTS"
+            title.Location = New Point(24, 20)
+            title.Size = New Size(640, 38)
+            title.Font = New Font("Georgia", 17, FontStyle.Bold)
+            title.ForeColor = CoffeeDark
+            policyForm.Controls.Add(title)
+
+            Dim subtitle As New Label()
+            subtitle.Text = "Please review these requirements before a tenant is registered."
+            subtitle.Location = New Point(26, 60)
+            subtitle.Size = New Size(640, 28)
+            subtitle.ForeColor = Coffee
+            policyForm.Controls.Add(subtitle)
+
+            Dim policyText As New TextBox()
+            policyText.Location = New Point(24, 96)
+            policyText.Size = New Size(650, 420)
+            policyText.Multiline = True
+            policyText.ReadOnly = True
+            policyText.ScrollBars = ScrollBars.Vertical
+            policyText.WordWrap = True
+            policyText.BorderStyle = BorderStyle.FixedSingle
+            policyText.BackColor = CardColor
+            policyText.ForeColor = TextDark
+            policyText.Font = New Font("Segoe UI", 10.0F)
+            policyText.Text =
+                "REQUIRED DOCUMENTS" & Environment.NewLine &
+                "1. Provide valid government-issued identification and accurate contact information." & Environment.NewLine &
+                "2. Provide current home address and emergency contact details when requested." & Environment.NewLine &
+                "3. Submit any reasonable income, employment, or ability-to-pay documents requested during screening." & Environment.NewLine &
+                "4. Complete the rental application and review the lease before signing." & Environment.NewLine & Environment.NewLine &
+                "RENTAL POLICIES" & Environment.NewLine &
+                "1. Pay rent and any agreed charges by the due dates stated in the signed lease." & Environment.NewLine &
+                "2. Pay the security deposit and other lawful move-in charges before receiving keys, as specified in the lease." & Environment.NewLine &
+                "3. Keep the property reasonably clean and promptly report maintenance issues or damage." & Environment.NewLine &
+                "4. Do not intentionally damage, alter, or renovate the property without the owner's written permission." & Environment.NewLine &
+                "5. Follow applicable building, fire-safety, sanitation, parking, and community rules." & Environment.NewLine &
+                "6. Do not use the property for illegal activities or create unreasonable noise or disturbances." & Environment.NewLine &
+                "7. Do not sublet, transfer occupancy, or allow unauthorized long-term occupants unless permitted in writing and by the lease." & Environment.NewLine &
+                "8. Allow property access for repairs, inspections, or emergencies in accordance with the lease and applicable law." & Environment.NewLine &
+                "9. Report leaks, hazards, damage, or security concerns as soon as reasonably possible." & Environment.NewLine &
+                "10. Observe the agreed lease term, move-out process, and key-return requirements. Obtain written approval for any lease changes." & Environment.NewLine & Environment.NewLine &
+                "FAIR AND LAWFUL TREATMENT" & Environment.NewLine &
+                "• Applications should be assessed consistently and without unlawful discrimination." & Environment.NewLine &
+                "• Deposits, deductions, notices, entry, eviction, and other landlord-tenant matters must follow the signed lease and applicable local law." & Environment.NewLine &
+                "• These general rules do not replace the lease or legal requirements. Confirm the final requirements with the property owner/manager and applicable Philippine law."
+            policyForm.Controls.Add(policyText)
+
+            Dim chkAcknowledge As New CheckBox()
+            chkAcknowledge.Text = "I have reviewed these policies and requirements with the tenant."
+            chkAcknowledge.Location = New Point(25, 530)
+            chkAcknowledge.Size = New Size(640, 28)
+            chkAcknowledge.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold)
+            chkAcknowledge.ForeColor = TextDark
+            policyForm.Controls.Add(chkAcknowledge)
+
+            Dim btnAccept As Button =
+                CreateButton(
+                    "Acknowledge",
+                    New Point(424, 565),
+                    New Size(120, 36),
+                    Coffee
+                )
+            btnAccept.DialogResult = DialogResult.None
+            policyForm.Controls.Add(btnAccept)
+
+            Dim btnClose As Button =
+                CreateButton(
+                    "Close",
+                    New Point(554, 565),
+                    New Size(120, 36),
+                    Caramel
+                )
+            btnClose.DialogResult = DialogResult.Cancel
+            policyForm.Controls.Add(btnClose)
+
+            policyForm.AcceptButton = btnAccept
+            policyForm.CancelButton = btnClose
+
+            AddHandler btnAccept.Click,
+                Sub(senderObject, eventArgs)
+                    If Not chkAcknowledge.Checked Then
+                        MessageBox.Show(
+                            "Please confirm that the policies have been reviewed before continuing.",
+                            "Acknowledgement Required",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning
+                        )
+                        Return
+                    End If
+
+                    policiesAcknowledged = True
+                    policyForm.DialogResult = DialogResult.OK
+                    policyForm.Close()
+                End Sub
+
+            AddHandler btnClose.Click,
+                Sub(senderObject, eventArgs)
+                    policyForm.DialogResult = DialogResult.Cancel
+                    policyForm.Close()
+                End Sub
+
+            policyForm.ShowDialog(Me)
+
+        End Using
+
+        Return policiesAcknowledged
+
+    End Function
+
+
+    '==========================================================
     ' ADD TENANT
     '==========================================================
 
@@ -1121,6 +1277,19 @@ Public Class TenantsForm
         sender As Object,
         e As EventArgs
     )
+
+        If Not policiesAcknowledged Then
+            MessageBox.Show(
+                "Review and acknowledge the rental policies and requirements before adding a tenant.",
+                "Policies Must Be Reviewed",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            )
+
+            If Not ShowPoliciesDialog() Then
+                Return
+            End If
+        End If
 
         If Not ValidateFields() Then
 
@@ -1189,6 +1358,7 @@ Public Class TenantsForm
             LoadTenants()
 
             ClearFields()
+            policiesAcknowledged = False
 
 
         Catch ex As Exception
