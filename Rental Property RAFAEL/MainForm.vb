@@ -137,9 +137,10 @@ Public Class MainForm
 
         Me.Controls.Add(pnlNavigation)
 
-        'Force the navigation panel to remain above the
-        'main content without covering the content area.
-        pnlNavigation.BringToFront()
+        'Do not call BringToFront here. With DockStyle.Left and
+        'DockStyle.Fill, changing z-order can make the sidebar
+        'paint over the fill panel instead of reserving its width.
+        'WinForms docking will size pnlContent to the remaining area.
 
 
         '======================================================
