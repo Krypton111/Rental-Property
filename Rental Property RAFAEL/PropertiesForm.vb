@@ -67,6 +67,7 @@ Public Class PropertiesForm
     Private btnUpdate As Button
     Private btnDelete As Button
     Private btnClear As Button
+    Private formPanel As Panel
 
     Private dgvProperties As DataGridView
 
@@ -83,8 +84,8 @@ Public Class PropertiesForm
 
         If IsViewerAccount() Then
             formPanel.Visible = False
-            dgvProperties.Location = New Point(25, 100)
-            dgvProperties.Size = New Size(Me.ClientSize.Width - 50, Me.ClientSize.Height - 135)
+            dgvProperties.Location = New Point(25, 165)
+            dgvProperties.Size = New Size(Me.ClientSize.Width - 50, Me.ClientSize.Height - 190)
             dgvProperties.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         End If
 
@@ -240,7 +241,7 @@ Public Class PropertiesForm
         ' FORM CARD
         '======================================================
 
-        Dim formPanel As New Panel()
+        formPanel = New Panel()
 
         formPanel.Location =
             New Point(25, 170)
