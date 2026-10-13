@@ -524,7 +524,7 @@ Public Class MainForm
             ' Staff may view the dashboard, but cannot use its
             ' navigation button or access restricted modules.
             btnDashboard.Visible = True
-            btnDashboard.Enabled = False
+            btnDashboard.Enabled = True
             btnProperties.Visible = True
             btnTenants.Visible = True
             btnPayments.Visible = False
@@ -994,6 +994,10 @@ Public Class MainForm
         AddHandler btnQuickProperty.Click,
             AddressOf PropertiesClicked
 
+        If IsViewerAccount() Then
+            btnQuickProperty.Enabled = False
+        End If
+
         pnlContent.Controls.Add(
             btnQuickProperty
         )
@@ -1013,6 +1017,10 @@ Public Class MainForm
         AddHandler btnQuickTenant.Click,
             AddressOf TenantsClicked
 
+        If IsViewerAccount() Then
+            btnQuickTenant.Enabled = False
+        End If
+
         pnlContent.Controls.Add(
             btnQuickTenant
         )
@@ -1031,6 +1039,10 @@ Public Class MainForm
 
         AddHandler btnQuickPayment.Click,
             AddressOf PaymentsClicked
+
+        If IsViewerAccount() Then
+            btnQuickPayment.Enabled = False
+        End If
 
         pnlContent.Controls.Add(
             btnQuickPayment
