@@ -331,6 +331,11 @@ Public Class ReportsForm
 
         contentPanel.Controls.Add(statusLabel)
 
+        ' Keep the status bar docked before the grid so the grid
+        ' fills only the remaining space instead of being clipped.
+        contentPanel.Controls.SetChildIndex(statusLabel, 1)
+        contentPanel.Controls.SetChildIndex(reportGrid, 0)
+
     End Sub
 
     '===========================================================
