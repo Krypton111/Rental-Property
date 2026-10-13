@@ -64,6 +64,7 @@ Public Class TenantsForm
     Private btnDelete As Button
     Private btnClear As Button
     Private btnPolicies As Button
+    Private formPanel As Panel
 
     Private dgvTenants As DataGridView
 
@@ -82,8 +83,8 @@ Public Class TenantsForm
         If IsViewerAccount() Then
             formPanel.Visible = False
             btnPolicies.Visible = False
-            dgvTenants.Location = New Point(25, 100)
-            dgvTenants.Size = New Size(Me.ClientSize.Width - 50, Me.ClientSize.Height - 135)
+            dgvTenants.Location = New Point(25, 165)
+            dgvTenants.Size = New Size(Me.ClientSize.Width - 50, Me.ClientSize.Height - 190)
             dgvTenants.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         End If
 
@@ -255,7 +256,7 @@ Public Class TenantsForm
         ' FORM PANEL
         '======================================================
 
-        Dim formPanel As New Panel()
+        formPanel = New Panel()
 
         formPanel.Location =
             New Point(25, 170)
