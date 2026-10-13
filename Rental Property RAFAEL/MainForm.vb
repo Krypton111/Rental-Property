@@ -521,8 +521,8 @@ Public Class MainForm
             LoginForm.LoggedInRole.Trim()
 
         If IsViewerAccount() Then
-            ' Staff may view the dashboard, but cannot use its
-            ' navigation button or access restricted modules.
+            ' Staff may view the dashboard and use Properties, Tenants,
+            ' and password settings, but not restricted modules.
             btnDashboard.Visible = True
             btnDashboard.Enabled = True
             btnProperties.Visible = True
@@ -587,10 +587,7 @@ Public Class MainForm
         e As EventArgs
     )
 
-        If IsViewerAccount() Then
-            Return
-        End If
-
+        ' Dashboard is available to every role, including staff viewer accounts.
         ShowDashboard()
 
     End Sub
