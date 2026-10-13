@@ -6,6 +6,7 @@ Imports Microsoft.Data.SqlClient
 Public Class MainForm
     Inherits Form
 
+    Private pnlLayoutHost As TableLayoutPanel
     Private pnlNavigation As Panel
     Private pnlContent As Panel
 
@@ -96,11 +97,11 @@ Public Class MainForm
         pnlNavigation = New Panel()
 
         pnlNavigation.Dock =
-        DockStyle.Left
+        DockStyle.Fill
 
-        'Keep the sidebar wide enough for its existing buttons
-        pnlNavigation.Width =
-        235
+        'The sidebar occupies its own fixed-width layout column.
+        pnlNavigation.Margin = New Padding(0)
+        pnlNavigation.Width = 235
 
         pnlNavigation.BackColor =
         CoffeeDark
@@ -114,6 +115,7 @@ Public Class MainForm
         pnlContent.Dock =
         DockStyle.Fill
 
+        pnlContent.Margin = New Padding(0)
         pnlContent.BackColor =
         Cream
 
@@ -131,18 +133,31 @@ Public Class MainForm
         ' ADD MAIN PANELS
         '======================================================
 
-        'Add content first.
-        'The navigation panel is added afterward so it remains
-        'a separate left-side area instead of covering content.
+        'Use a two-column layout container instead of relying on
+        'WinForms docking order. This reserves a fixed 235px column
+        'for the sidebar and places all page content in the remaining
+        'column, preventing the sidebar from overlapping the content.
 
-        Me.Controls.Add(pnlContent)
+        pnlLayoutHost = New TableLayoutPanel()
+        pnlLayoutHost.Dock = DockStyle.Fill
+        pnlLayoutHost.Margin = New Padding(0)
+        pnlLayoutHost.Padding = New Padding(0)
+        pnlLayoutHost.ColumnCount = 2
+        pnlLayoutHost.RowCount = 1
+        pnlLayoutHost.GrowStyle = TableLayoutPanelGrowStyle.FixedSize
+        pnlLayoutHost.ColumnStyles.Add(
+            New ColumnStyle(SizeType.Absolute, 235.0F)
+        )
+        pnlLayoutHost.ColumnStyles.Add(
+            New ColumnStyle(SizeType.Percent, 100.0F)
+        )
+        pnlLayoutHost.RowStyles.Add(
+            New RowStyle(SizeType.Percent, 100.0F)
+        )
 
-        Me.Controls.Add(pnlNavigation)
-
-        'Do not call BringToFront here. With DockStyle.Left and
-        'DockStyle.Fill, changing z-order can make the sidebar
-        'paint over the fill panel instead of reserving its width.
-        'WinForms docking will size pnlContent to the remaining area.
+        pnlLayoutHost.Controls.Add(pnlNavigation, 0, 0)
+        pnlLayoutHost.Controls.Add(pnlContent, 1, 0)
+        Me.Controls.Add(pnlLayoutHost)
 
 
         '======================================================
