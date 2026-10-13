@@ -96,6 +96,8 @@ Public Class SettingsForm
 
         LoadSystemInformation()
 
+        ApplySystemInformationPermissions()
+
     End Sub
 
     '==========================================================
@@ -869,6 +871,44 @@ Public Class SettingsForm
     End Sub
 
     '==========================================================
+    ' SYSTEM INFORMATION PERMISSIONS
+    ' Only Admin and Manager may edit system information.
+    '==========================================================
+
+    Private Function CanManageSystemInformation() As Boolean
+
+        Dim role As String =
+            If(LoginForm.LoggedInRole, String.Empty).Trim()
+
+        Return role.Equals("Admin", StringComparison.OrdinalIgnoreCase) OrElse
+               role.Equals("Manager", StringComparison.OrdinalIgnoreCase)
+
+    End Function
+
+    Private Sub ApplySystemInformationPermissions()
+
+        Dim canEdit As Boolean =
+            CanManageSystemInformation()
+
+        txtSystemName.ReadOnly = Not canEdit
+        txtSystemDescription.ReadOnly = Not canEdit
+
+        txtSystemName.BackColor =
+            If(canEdit, Color.White, Color.FromArgb(235, 228, 221))
+
+        txtSystemDescription.BackColor =
+            If(canEdit, Color.White, Color.FromArgb(235, 228, 221))
+
+        btnSaveSystem.Enabled = canEdit
+        btnResetSystem.Enabled = canEdit
+
+        If Not canEdit Then
+            lblSystemTitle.Text = "System Information (View Only)"
+        End If
+
+    End Sub
+
+    '==========================================================
     ' UPDATE PROFILE
     '==========================================================
 
@@ -1193,6 +1233,16 @@ Public Class SettingsForm
         e As EventArgs
     )
 
+        If Not CanManageSystemInformation() Then
+            MessageBox.Show(
+                "Only Admin and Manager accounts can change system information.",
+                "Permission Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            )
+            Return
+        End If
+
         If String.IsNullOrWhiteSpace(
             txtSystemName.Text
         ) Then
@@ -1225,6 +1275,16 @@ Public Class SettingsForm
         sender As Object,
         e As EventArgs
     )
+
+        If Not CanManageSystemInformation() Then
+            MessageBox.Show(
+                "Only Admin and Manager accounts can change system information.",
+                "Permission Denied",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            )
+            Return
+        End If
 
         txtSystemName.Text =
             "Casa Brew"
