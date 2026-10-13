@@ -98,6 +98,8 @@ Public Class SettingsForm
 
         ApplySystemInformationPermissions()
 
+        ApplyViewerSettingsPermissions()
+
     End Sub
 
     '==========================================================
@@ -867,6 +869,54 @@ Public Class SettingsForm
 
         txtRole.Text =
             LoginForm.LoggedInRole
+
+    End Sub
+
+    '==========================================================
+    ' STAFF VIEWER SETTINGS PERMISSIONS
+    ' Staff accounts may change only their own password here.
+    '==========================================================
+
+    Private Function IsViewerAccount() As Boolean
+
+        Dim role As String =
+            If(LoginForm.LoggedInRole, String.Empty).Trim()
+
+        Dim username As String =
+            If(LoginForm.LoggedInUsername, String.Empty).Trim()
+
+        Return role.Equals("Staff", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff1", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff2", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff3", StringComparison.OrdinalIgnoreCase)
+
+    End Function
+
+    Private Sub ApplyViewerSettingsPermissions()
+
+        If Not IsViewerAccount() Then
+            Return
+        End If
+
+        ' Keep account details visible, but prevent profile edits.
+        txtUsername.ReadOnly = True
+        txtFullName.ReadOnly = True
+
+        txtUsername.BackColor = Color.FromArgb(235, 228, 221)
+        txtFullName.BackColor = Color.FromArgb(235, 228, 221)
+
+        btnUpdateProfile.Visible = False
+
+        ' Staff must not be able to edit system information or
+        ' access database connection controls through Settings.
+        pnlSystem.Visible = False
+        pnlDatabase.Visible = False
+
+        lblSubtitle.Text =
+            "View your account details and change your password."
+
+        lblAccountTitle.Text =
+            "Account Details and Password"
 
     End Sub
 
