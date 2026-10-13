@@ -58,7 +58,11 @@ Public Class MainForm
 
         BuildMainForm()
 
-        ShowDashboard()
+        If IsViewerAccount() Then
+            PropertiesClicked(Nothing, EventArgs.Empty)
+        Else
+            ShowDashboard()
+        End If
 
     End Sub
 
@@ -489,6 +493,22 @@ Public Class MainForm
     ' ROLE PERMISSIONS
     '==========================================================
 
+    Private Function IsViewerAccount() As Boolean
+
+        Dim role As String =
+            If(LoginForm.LoggedInRole, String.Empty).Trim()
+
+        Dim username As String =
+            If(LoginForm.LoggedInUsername, String.Empty).Trim()
+
+        Return role.Equals("Staff", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff1", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff2", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff3", StringComparison.OrdinalIgnoreCase)
+
+    End Function
+
+
     Private Sub ApplyRolePermissions()
 
         If String.IsNullOrEmpty(
@@ -499,9 +519,19 @@ Public Class MainForm
 
         End If
 
-
         Dim role As String =
-            LoginForm.LoggedInRole
+            LoginForm.LoggedInRole.Trim()
+
+        If IsViewerAccount() Then
+            btnDashboard.Visible = False
+            btnProperties.Visible = True
+            btnTenants.Visible = True
+            btnPayments.Visible = False
+            btnReports.Visible = False
+            btnUsers.Visible = False
+            btnSettings.Visible = False
+            Return
+        End If
 
 
         'Admin only
@@ -608,6 +638,11 @@ Public Class MainForm
         e As EventArgs
     )
 
+        If IsViewerAccount() Then
+            ShowViewerAccessDenied()
+            Return
+        End If
+
         Dim form As New PaymentsForm()
 
         OpenPage(
@@ -626,6 +661,11 @@ Public Class MainForm
         sender As Object,
         e As EventArgs
     )
+
+        If IsViewerAccount() Then
+            ShowViewerAccessDenied()
+            Return
+        End If
 
         Dim form As New ReportsForm()
 
@@ -646,6 +686,11 @@ Public Class MainForm
         e As EventArgs
     )
 
+        If IsViewerAccount() Then
+            ShowViewerAccessDenied()
+            Return
+        End If
+
         Dim form As New UserManagementForm()
 
         OpenPage(
@@ -665,11 +710,28 @@ Public Class MainForm
         e As EventArgs
     )
 
+        If IsViewerAccount() Then
+            ShowViewerAccessDenied()
+            Return
+        End If
+
         Dim form As New SettingsForm()
 
         OpenPage(
             form,
             "Settings"
+        )
+
+    End Sub
+
+
+    Private Sub ShowViewerAccessDenied()
+
+        MessageBox.Show(
+            "Staff viewer accounts can only view Properties and Tenants.",
+            "Access Restricted",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning
         )
 
     End Sub
