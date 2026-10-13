@@ -58,11 +58,9 @@ Public Class MainForm
 
         BuildMainForm()
 
-        If IsViewerAccount() Then
-            PropertiesClicked(Nothing, EventArgs.Empty)
-        Else
-            ShowDashboard()
-        End If
+        ' All users can see the dashboard initially. Staff viewer
+        ' accounts will have restricted navigation and page actions.
+        ShowDashboard()
 
     End Sub
 
@@ -523,13 +521,16 @@ Public Class MainForm
             LoginForm.LoggedInRole.Trim()
 
         If IsViewerAccount() Then
-            btnDashboard.Visible = False
+            ' Staff may view the dashboard, but cannot use its
+            ' navigation button or access restricted modules.
+            btnDashboard.Visible = True
+            btnDashboard.Enabled = False
             btnProperties.Visible = True
             btnTenants.Visible = True
             btnPayments.Visible = False
             btnReports.Visible = False
             btnUsers.Visible = False
-            btnSettings.Visible = False
+            btnSettings.Visible = True
             Return
         End If
 
@@ -585,6 +586,10 @@ Public Class MainForm
         sender As Object,
         e As EventArgs
     )
+
+        If IsViewerAccount() Then
+            Return
+        End If
 
         ShowDashboard()
 
@@ -710,11 +715,6 @@ Public Class MainForm
         e As EventArgs
     )
 
-        If IsViewerAccount() Then
-            ShowViewerAccessDenied()
-            Return
-        End If
-
         Dim form As New SettingsForm()
 
         OpenPage(
@@ -728,7 +728,7 @@ Public Class MainForm
     Private Sub ShowViewerAccessDenied()
 
         MessageBox.Show(
-            "Staff viewer accounts can only view Properties and Tenants.",
+            "Staff viewer accounts can only view Properties and Tenants and change their own password in Settings.",
             "Access Restricted",
             MessageBoxButtons.OK,
             MessageBoxIcon.Warning
