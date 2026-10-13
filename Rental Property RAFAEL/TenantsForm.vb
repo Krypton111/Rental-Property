@@ -79,6 +79,14 @@ Public Class TenantsForm
 
         BuildForm()
 
+        If IsViewerAccount() Then
+            formPanel.Visible = False
+            btnPolicies.Visible = False
+            dgvTenants.Location = New Point(25, 100)
+            dgvTenants.Size = New Size(Me.ClientSize.Width - 50, Me.ClientSize.Height - 135)
+            dgvTenants.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        End If
+
         LoadPropertiesIntoComboBox()
 
         LoadTenants()
@@ -1273,10 +1281,43 @@ Public Class TenantsForm
     ' ADD TENANT
     '==========================================================
 
+    Private Function IsViewerAccount() As Boolean
+
+        Dim role As String =
+            If(LoginForm.LoggedInRole, String.Empty).Trim()
+
+        Dim username As String =
+            If(LoginForm.LoggedInUsername, String.Empty).Trim()
+
+        Return role.Equals("Staff", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff1", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff2", StringComparison.OrdinalIgnoreCase) OrElse
+               username.Equals("staff3", StringComparison.OrdinalIgnoreCase)
+
+    End Function
+
+
+    Private Function BlockViewerModification() As Boolean
+
+        If Not IsViewerAccount() Then Return False
+
+        MessageBox.Show(
+            "Staff viewer accounts have read-only access to Tenants.",
+            "Access Restricted",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning
+        )
+        Return True
+
+    End Function
+
+
     Private Sub AddTenantClicked(
         sender As Object,
         e As EventArgs
     )
+
+        If BlockViewerModification() Then Return
 
         If Not policiesAcknowledged Then
             MessageBox.Show(
@@ -1387,6 +1428,8 @@ Public Class TenantsForm
         e As EventArgs
     )
 
+        If BlockViewerModification() Then Return
+
         If selectedTenantID = 0 Then
 
             MessageBox.Show(
@@ -1489,6 +1532,8 @@ Public Class TenantsForm
         sender As Object,
         e As EventArgs
     )
+
+        If BlockViewerModification() Then Return
 
         If selectedTenantID = 0 Then
 
