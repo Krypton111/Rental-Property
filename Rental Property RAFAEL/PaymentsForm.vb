@@ -1043,12 +1043,73 @@ Public Class PaymentsForm
 
         txtProperty.Text = tenant.PropertyName
 
-        If tenant.MonthlyRent > 0D Then
-            txtAmountDue.Text = tenant.MonthlyRent.ToString("0.00")
-        Else
-            txtAmountDue.Clear()
+        ' When editing an existing payment, keep that record's original
+        ' amount due. Only calculate a new outstanding balance when adding
+        ' a new payment for this tenant.
+        If selectedPaymentID > 0 Then
+            Return
         End If
 
+        Dim amountToPay As Decimal = tenant.MonthlyRent
+
+        Try
+            Using connection = DatabaseHelper.GetConnection()
+                connection.Open()
+
+                Dim sql As String =
+                    "SELECT TOP 1 AmountDue, AmountPaid, PaymentStatus " &
+                    "FROM Payments " &
+                    "WHERE TenantID = @TenantID AND IsActive = 1 " &
+                    "ORDER BY PaymentDate DESC, PaymentID DESC"
+
+                Using command As New SqlCommand(sql, connection)
+                    command.Parameters.Add("@TenantID", SqlDbType.Int).Value = tenant.ID
+
+                    Using reader = command.ExecuteReader()
+                        If reader.Read() Then
+                            Dim previousStatus As String =
+                                If(reader("PaymentStatus") Is DBNull.Value,
+                                   "",
+                                   reader("PaymentStatus").ToString())
+
+                            If previousStatus.Equals("Unpaid", StringComparison.OrdinalIgnoreCase) OrElse
+                               previousStatus.Equals("Partially Paid", StringComparison.OrdinalIgnoreCase) Then
+
+                                Dim previousDue As Decimal =
+                                    If(reader("AmountDue") Is DBNull.Value, 0D, Convert.ToDecimal(reader("AmountDue")))
+                                Dim previousPaid As Decimal =
+                                    If(reader("AmountPaid") Is DBNull.Value, 0D, Convert.ToDecimal(reader("AmountPaid")))
+
+                                amountToPay = Math.Max(0D, previousDue - previousPaid)
+                            End If
+                        End If
+                    End Using
+                End Using
+            End Using
+
+            If amountToPay > 0D Then
+                txtAmountDue.Text = amountToPay.ToString("0.00")
+            ElseIf tenant.MonthlyRent > 0D Then
+                ' The most recent bill is settled; start a new monthly rent bill.
+                txtAmountDue.Text = tenant.MonthlyRent.ToString("0.00")
+            Else
+                txtAmountDue.Clear()
+            End If
+
+        Catch ex As Exception
+            MessageBox.Show(
+                "Unable to calculate the tenant's outstanding balance." &
+                Environment.NewLine & Environment.NewLine & ex.Message,
+                "Payment Balance",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning
+            )
+
+            txtAmountDue.Text = tenant.MonthlyRent.ToString("0.00")
+        End Try
+
+        ' A new payment record pays down the outstanding amount from zero.
+        txtAmountPaid.Clear()
         UpdatePaymentCalculation()
 
     End Sub
