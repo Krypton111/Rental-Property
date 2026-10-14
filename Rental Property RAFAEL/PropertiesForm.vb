@@ -1907,7 +1907,7 @@ Public Class PropertiesForm
             )
 
 
-        txtTenantName.Text =
+        cboTenantName.Text =
             GetCellString(
                 row,
                 "TenantName"
@@ -2347,7 +2347,7 @@ Public Class PropertiesForm
             SqlDbType.NVarChar,
             150
         ).Value =
-            txtTenantName.Text.Trim()
+            cboTenantName.Text.Trim()
 
 
         If txtContactNumber.Text.Trim() = "" Then
