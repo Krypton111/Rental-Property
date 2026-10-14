@@ -57,6 +57,7 @@ Public Class PaymentsForm
 
     Private txtAmountDue As TextBox
     Private txtAmountPaid As TextBox
+    Private txtBalanceRemaining As TextBox
 
     Private cboPaymentMethod As ComboBox
     Private cboPaymentStatus As ComboBox
@@ -312,6 +313,9 @@ Public Class PaymentsForm
         AddHandler cboTenant.SelectedIndexChanged,
             AddressOf TenantChanged
 
+        AddHandler txtAmountPaid.TextChanged,
+            AddressOf AmountPaidChanged
+
 
         '======================================================
         ' PROPERTY
@@ -393,6 +397,9 @@ Public Class PaymentsForm
 
         txtAmountDue.Size =
             New Size(200, 30)
+
+        txtAmountDue.ReadOnly = True
+        txtAmountDue.BackColor = Color.FromArgb(235, 225, 215)
 
         formPanel.Controls.Add(txtAmountDue)
 
@@ -502,6 +509,26 @@ Public Class PaymentsForm
         )
 
         formPanel.Controls.Add(cboPaymentStatus)
+
+
+        '======================================================
+        ' BALANCE REMAINING
+        '======================================================
+
+        Dim lblBalanceRemaining As Label =
+            CreateLabel(
+                "Balance Remaining",
+                New Point(875, 90)
+            )
+
+        formPanel.Controls.Add(lblBalanceRemaining)
+
+        txtBalanceRemaining = CreateTextBox()
+        txtBalanceRemaining.Location = New Point(875, 118)
+        txtBalanceRemaining.Size = New Size(135, 30)
+        txtBalanceRemaining.ReadOnly = True
+        txtBalanceRemaining.BackColor = Color.FromArgb(235, 225, 215)
+        formPanel.Controls.Add(txtBalanceRemaining)
 
 
         '======================================================
@@ -857,7 +884,8 @@ Public Class PaymentsForm
                     "t.TenantID, " &
                     "t.TenantName, " &
                     "t.PropertyID, " &
-                    "p.PropertyName " &
+                    "p.PropertyName, " &
+                    "ISNULL(p.MonthlyRent, 0) AS MonthlyRent " &
                     "FROM Tenants t " &
                     "LEFT JOIN Properties p " &
                     "ON t.PropertyID = p.PropertyID " &
@@ -924,6 +952,12 @@ Public Class PaymentsForm
                             End If
 
 
+                            If Not IsDBNull(reader("MonthlyRent")) Then
+                                item.MonthlyRent = Convert.ToDecimal(reader("MonthlyRent"))
+                            Else
+                                item.MonthlyRent = 0D
+                            End If
+
                             cboTenant.Items.Add(
                                 item
                             )
@@ -968,6 +1002,8 @@ Public Class PaymentsForm
 
         Public Property PropertyName As String
 
+        Public Property MonthlyRent As Decimal
+
 
         Public Overrides Function ToString() As String
 
@@ -1005,9 +1041,47 @@ Public Class PaymentsForm
         End If
 
 
-        txtProperty.Text =
-            tenant.PropertyName
+        txtProperty.Text = tenant.PropertyName
 
+        If tenant.MonthlyRent > 0D Then
+            txtAmountDue.Text = tenant.MonthlyRent.ToString("0.00")
+        Else
+            txtAmountDue.Clear()
+        End If
+
+        UpdatePaymentCalculation()
+
+    End Sub
+
+
+    '==========================================================
+    ' AMOUNT PAID CHANGED
+    '==========================================================
+
+    Private Sub AmountPaidChanged(sender As Object, e As EventArgs)
+        UpdatePaymentCalculation()
+    End Sub
+
+
+    Private Sub UpdatePaymentCalculation()
+        Dim amountDue As Decimal = 0D
+        Dim amountPaid As Decimal = 0D
+
+        Decimal.TryParse(txtAmountDue.Text.Trim(), amountDue)
+        Decimal.TryParse(txtAmountPaid.Text.Trim(), amountPaid)
+
+        Dim remaining As Decimal = Math.Max(0D, amountDue - amountPaid)
+        txtBalanceRemaining.Text = remaining.ToString("0.00")
+
+        If cboPaymentStatus IsNot Nothing Then
+            If amountDue <= 0D OrElse amountPaid <= 0D Then
+                cboPaymentStatus.SelectedItem = "Unpaid"
+            ElseIf amountPaid >= amountDue Then
+                cboPaymentStatus.SelectedItem = "Paid"
+            Else
+                cboPaymentStatus.SelectedItem = "Partially Paid"
+            End If
+        End If
     End Sub
 
 
@@ -1814,6 +1888,8 @@ Public Class PaymentsForm
                 "PaymentStatus"
             )
 
+        UpdatePaymentCalculation()
+
 
         '------------------------------------------------------
         ' NOTES
@@ -2153,6 +2229,7 @@ Public Class PaymentsForm
         txtAmountDue.Clear()
 
         txtAmountPaid.Clear()
+        txtBalanceRemaining.Clear()
 
         cboPaymentMethod.SelectedIndex = -1
 
