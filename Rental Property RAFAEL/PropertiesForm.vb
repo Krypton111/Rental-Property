@@ -51,8 +51,9 @@ Public Class PropertiesForm
     Private txtPropertyAddress As TextBox
     Private cboPropertyType As ComboBox
 
-    Private txtTenantName As TextBox
+    Private cboTenantName As ComboBox
     Private txtContactNumber As TextBox
+    Private tenantTable As DataTable
 
     Private txtMonthlyRent As TextBox
     Private txtSecurityDeposit As TextBox
@@ -81,6 +82,8 @@ Public Class PropertiesForm
     Public Sub New()
 
         BuildForm()
+
+        LoadTenantsIntoComboBox()
 
         If IsViewerAccount() Then
             formPanel.Visible = False
@@ -370,16 +373,21 @@ Public Class PropertiesForm
         ' TENANT NAME
         '======================================================
 
-        txtTenantName =
-            CreateTextBox()
+        cboTenantName =
+            CreateComboBox()
 
-        txtTenantName.Location =
+        cboTenantName.Location =
             New Point(20, 115)
 
-        txtTenantName.Size =
+        cboTenantName.Size =
             New Size(220, 30)
 
-        formPanel.Controls.Add(txtTenantName)
+        cboTenantName.DropDownStyle = ComboBoxStyle.DropDownList
+        cboTenantName.DisplayMember = "TenantName"
+        cboTenantName.ValueMember = "TenantID"
+        AddHandler cboTenantName.SelectedIndexChanged, AddressOf TenantSelectionChanged
+
+        formPanel.Controls.Add(cboTenantName)
 
 
         formPanel.Controls.Add(
@@ -876,6 +884,39 @@ Public Class PropertiesForm
     End Function
 
 
+    Private Sub LoadTenantsIntoComboBox()
+        Try
+            Using connection = DatabaseHelper.GetConnection()
+                connection.Open()
+                Dim sql As String =
+                    "SELECT TenantID, TenantName, ContactNumber " &
+                    "FROM Tenants WHERE IsActive = 1 " &
+                    "ORDER BY TenantName;"
+                Using adapter As New SqlDataAdapter(sql, connection)
+                    tenantTable = New DataTable()
+                    adapter.Fill(tenantTable)
+                End Using
+            End Using
+
+            cboTenantName.DataSource = Nothing
+            cboTenantName.DisplayMember = "TenantName"
+            cboTenantName.ValueMember = "TenantID"
+            cboTenantName.DataSource = tenantTable
+            cboTenantName.SelectedIndex = -1
+            txtContactNumber.Clear()
+        Catch ex As Exception
+            MessageBox.Show("Unable to load tenant names." & Environment.NewLine & ex.Message,
+                            "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    Private Sub TenantSelectionChanged(sender As Object, e As EventArgs)
+        If cboTenantName Is Nothing OrElse cboTenantName.SelectedIndex < 0 Then Return
+        Dim selected As DataRowView = TryCast(cboTenantName.SelectedItem, DataRowView)
+        If selected Is Nothing Then Return
+        txtContactNumber.Text = If(IsDBNull(selected("ContactNumber")), "", Convert.ToString(selected("ContactNumber")))
+    End Sub
+
     '==========================================================
     ' LOAD PROPERTIES
     '
@@ -1155,7 +1196,7 @@ Public Class PropertiesForm
                         ' INSERT TENANT IF PROVIDED
                         '==================================================
 
-                        If txtTenantName.Text.Trim() <> "" Then
+                        If cboTenantName.SelectedIndex >= 0 Then
 
                             Dim tenantSql As String =
                                 "INSERT INTO Tenants " &
@@ -1363,7 +1404,7 @@ Public Class PropertiesForm
                         ' UPDATE OR INSERT TENANT
                         '==================================================
 
-                        If txtTenantName.Text.Trim() <> "" Then
+                        If cboTenantName.Text.Trim() <> "" Then
 
                             If tenantExists Then
 
@@ -2391,7 +2432,7 @@ Public Class PropertiesForm
 
         cboPropertyType.SelectedIndex = -1
 
-        txtTenantName.Clear()
+        If cboTenantName IsNot Nothing Then cboTenantName.SelectedIndex = -1
 
         txtContactNumber.Clear()
 
