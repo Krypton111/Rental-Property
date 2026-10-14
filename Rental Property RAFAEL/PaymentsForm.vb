@@ -313,9 +313,6 @@ Public Class PaymentsForm
         AddHandler cboTenant.SelectedIndexChanged,
             AddressOf TenantChanged
 
-        AddHandler txtAmountPaid.TextChanged,
-            AddressOf AmountPaidChanged
-
 
         '======================================================
         ' PROPERTY
@@ -427,6 +424,9 @@ Public Class PaymentsForm
             New Size(200, 30)
 
         formPanel.Controls.Add(txtAmountPaid)
+
+        AddHandler txtAmountPaid.TextChanged,
+            AddressOf AmountPaidChanged
 
 
         '======================================================
