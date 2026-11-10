@@ -163,7 +163,7 @@ Public Class RecordFilterForm
         If dataType Is GetType(DateTime) Then
             Dim fromPicker As New DateTimePicker With {
                 .Format = DateTimePickerFormat.Custom,
-                .CustomFormat = "MMM dd, yyyy",
+                .CustomFormat = "'From' MMM dd, yyyy",
                 .ShowCheckBox = True,
                 .Checked = False,
                 .Width = 245,
@@ -172,7 +172,7 @@ Public Class RecordFilterForm
             }
             Dim toPicker As New DateTimePicker With {
                 .Format = DateTimePickerFormat.Custom,
-                .CustomFormat = "MMM dd, yyyy",
+                .CustomFormat = "'To' MMM dd, yyyy",
                 .ShowCheckBox = True,
                 .Checked = False,
                 .Width = 245,
