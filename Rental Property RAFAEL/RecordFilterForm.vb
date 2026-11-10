@@ -200,6 +200,28 @@ Public Class RecordFilterForm
             row.Controls.Add(minimum)
             row.Controls.Add(maximum)
             criteria(fieldName) = New Object() {minimum, maximum}
+        ElseIf IsCategoricalField(fieldName) Then
+            Dim valueCombo As New ComboBox With {
+                .Width = 518,
+                .Location = New Point(12, 32),
+                .Font = New Font("Segoe UI", 9.0F),
+                .DropDownStyle = ComboBoxStyle.DropDownList
+            }
+            valueCombo.Items.Add("(Any)")
+            Dim seen As New List(Of String)()
+            For Each dataRow As DataRow In sourceTable.Rows
+                If Not dataRow.IsNull(fieldName) Then
+                    Dim itemText As String = Convert.ToString(dataRow(fieldName))
+                    If Not seen.Contains(itemText) Then seen.Add(itemText)
+                End If
+            Next
+            seen.Sort(StringComparer.CurrentCultureIgnoreCase)
+            For Each itemText As String In seen
+                valueCombo.Items.Add(itemText)
+            Next
+            valueCombo.SelectedIndex = 0
+            row.Controls.Add(valueCombo)
+            criteria(fieldName) = New Object() {valueCombo}
         Else
             Dim valueBox As New TextBox With {
                 .Width = 518,
@@ -214,6 +236,15 @@ Public Class RecordFilterForm
 
         scrollPanel.Controls.Add(row)
     End Sub
+
+    Private Shared Function IsCategoricalField(fieldName As String) As Boolean
+        Dim normalized As String = fieldName.Trim().ToLowerInvariant()
+        Return normalized = "propertytype" OrElse normalized = "propertystatus" OrElse
+               normalized = "paymentstatus" OrElse normalized = "paymentmethod" OrElse
+               normalized = "type" OrElse normalized = "status" OrElse
+               normalized = "payment" OrElse normalized = "method" OrElse
+               normalized = "property status"
+    End Function
 
     Private Shared Function IsNumericType(dataType As Type) As Boolean
         Return dataType Is GetType(Byte) OrElse dataType Is GetType(Short) OrElse
@@ -280,6 +311,12 @@ Public Class RecordFilterForm
                     MessageBox.Show("The minimum value cannot be greater than the maximum value.", "Check value range", MessageBoxButtons.OK, MessageBoxIcon.Warning)
                     Return
                 End If
+            ElseIf TypeOf controls(0) Is ComboBox Then
+                Dim selectedValue As ComboBox = DirectCast(controls(0), ComboBox)
+                If selectedValue.SelectedIndex > 0 Then
+                    Dim exactValue As String = Convert.ToString(selectedValue.SelectedItem).Replace("'", "''")
+                    expressions.Add(columnName & " = '" & exactValue & "'")
+                End If
             Else
                 Dim searchText As String = DirectCast(controls(0), TextBox).Text.Trim()
                 If searchText <> "" Then
@@ -299,6 +336,8 @@ Public Class RecordFilterForm
             For Each control As Object In entry.Value
                 If TypeOf control Is TextBox Then
                     DirectCast(control, TextBox).Clear()
+                ElseIf TypeOf control Is ComboBox Then
+                    DirectCast(control, ComboBox).SelectedIndex = 0
                 ElseIf TypeOf control Is DateTimePicker Then
                     DirectCast(control, DateTimePicker).Checked = False
                 End If
