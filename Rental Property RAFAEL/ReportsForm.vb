@@ -57,6 +57,7 @@ Public Class ReportsForm
     Private refreshButton As Button
     Private exportButton As Button
     Private closeButton As Button
+    Private filterButton As Button
 
     Private reportGrid As DataGridView
 
@@ -276,6 +277,11 @@ Public Class ReportsForm
             AddressOf CloseButton_Click
 
         toolbarPanel.Controls.Add(closeButton)
+
+        filterButton = CreateButton("Filter", New Point(720, 15), New Size(110, 38), CoffeeBrown)
+        RecordFilterForm.StyleFilterButton(filterButton)
+        AddHandler filterButton.Click, AddressOf FilterButton_Click
+        toolbarPanel.Controls.Add(filterButton)
 
         '-------------------------------------------------------
         ' DATA GRID
@@ -820,6 +826,38 @@ Public Class ReportsForm
         End If
 
     End Sub
+
+    '===========================================================
+    ' ADVANCED FILTER
+    '===========================================================
+
+    Private Sub FilterButton_Click(sender As Object, e As EventArgs)
+        Dim table As DataTable = RecordFilterForm.GetSourceTable(reportGrid.DataSource)
+        If table Is Nothing Then Return
+
+        Dim fields As String()
+        Select Case reportTypeComboBox.SelectedIndex
+            Case 0
+                fields = {"Property Type", "Status", "Payment", "Monthly Rent", "Security Deposit"}
+            Case 1
+                fields = {"Tenant Name", "Property", "Type", "Lease Start", "Lease End", "Payment Status"}
+            Case 2
+                fields = {"Tenant Name", "Property", "Payment Date", "Amount Due", "Amount Paid", "Balance", "Method", "Status"}
+            Case Else
+                fields = {"Property Status", "Number of Properties"}
+        End Select
+
+        Using dialog As New RecordFilterForm(table, "Filter " & reportTypeComboBox.Text, fields)
+            If dialog.ShowDialog(Me) <> DialogResult.OK Then Return
+            table.DefaultView.RowFilter = dialog.FilterExpression
+            reportGrid.DataSource = table.DefaultView
+            FormatGrid()
+            statusLabel.Text = If(dialog.FilterExpression = String.Empty,
+                                  "All records are displayed.",
+                                  "Report filters applied to the displayed records.")
+        End Using
+    End Sub
+
 
     '===========================================================
     ' REFRESH
