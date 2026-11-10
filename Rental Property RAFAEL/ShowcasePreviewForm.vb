@@ -135,6 +135,8 @@ Public Class ShowcasePreviewForm
         Me.FormBorderStyle = FormBorderStyle.None
         Me.TopLevel = False
         Me.Dock = DockStyle.Fill
+        Me.AutoScroll = True
+        Me.AutoScrollMinSize = New Size(1020, 660)
 
         Dim header As New Panel With {
             .Location = New Point(25, 12),
@@ -188,7 +190,7 @@ Public Class ShowcasePreviewForm
             .WrapContents = True,
             .FlowDirection = FlowDirection.LeftToRight,
             .Padding = New Padding(0, 0, 8, 12),
-            .Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+            .Anchor = AnchorStyles.Top Or AnchorStyles.Left
         }
 
         Dim propertyItems As List(Of PropertyInfo) = BuildProperties()
@@ -333,8 +335,12 @@ Public Class PropertyShowcaseDetailForm
 
         Me.Text = "Casa Brew | " & category & " Showcase"
         Me.StartPosition = FormStartPosition.CenterParent
-        Me.Size = New Size(1120, 820)
-        Me.MinimumSize = New Size(850, 650)
+        Dim workArea As Rectangle = Screen.FromPoint(Cursor.Position).WorkingArea
+        Dim windowWidth As Integer = Math.Min(1120, Math.Max(700, workArea.Width - 40))
+        Dim windowHeight As Integer = Math.Min(820, Math.Max(520, workArea.Height - 40))
+
+        Me.Size = New Size(windowWidth, windowHeight)
+        Me.MinimumSize = New Size(Math.Min(700, windowWidth), Math.Min(520, windowHeight))
         Me.BackColor = Cream
         Me.Font = New Font("Segoe UI", 9.5F)
         Me.FormBorderStyle = FormBorderStyle.Sizable
