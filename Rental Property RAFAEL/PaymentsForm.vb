@@ -50,6 +50,7 @@ Public Class PaymentsForm
     Private btnSearch As Button
     Private btnRefresh As Button
     Private btnPrintReceipt As Button
+    Private btnFilter As Button
 
     Private txtPaymentID As TextBox
     Private cboTenant As ComboBox
@@ -236,6 +237,12 @@ Public Class PaymentsForm
             )
 
         Me.Controls.Add(btnPrintReceipt)
+
+        btnFilter = CreateButton("Filter", New Point(750, 118), New Size(110, 36), Coffee)
+        RecordFilterForm.StyleFilterButton(btnFilter)
+        Me.Controls.Add(btnFilter)
+
+        AddHandler btnFilter.Click, AddressOf FilterClicked
 
         AddHandler btnPrintReceipt.Click,
             AddressOf PrintReceiptClicked
@@ -1840,6 +1847,28 @@ Public Class PaymentsForm
 
         End Try
 
+    End Sub
+
+
+    '==========================================================
+    ' ADVANCED FILTER
+    '==========================================================
+
+    Private Sub FilterClicked(sender As Object, e As EventArgs)
+        Dim table As DataTable = RecordFilterForm.GetSourceTable(dgvPayments.DataSource)
+        If table Is Nothing Then Return
+
+        Dim fields As String() = {
+            "TenantName", "PropertyName", "PaymentDate", "AmountDue", "AmountPaid",
+            "PaymentMethod", "PaymentStatus", "Notes"
+        }
+
+        Using dialog As New RecordFilterForm(table, "Filter Payments", fields)
+            If dialog.ShowDialog(Me) <> DialogResult.OK Then Return
+            table.DefaultView.RowFilter = dialog.FilterExpression
+            dgvPayments.DataSource = table.DefaultView
+            FormatGrid()
+        End Using
     End Sub
 
 
