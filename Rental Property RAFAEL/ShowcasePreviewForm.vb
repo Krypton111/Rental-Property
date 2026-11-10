@@ -135,8 +135,7 @@ Public Class ShowcasePreviewForm
         Me.FormBorderStyle = FormBorderStyle.None
         Me.TopLevel = False
         Me.Dock = DockStyle.Fill
-        Me.AutoScroll = True
-        Me.AutoScrollMinSize = New Size(1020, 660)
+        Me.AutoScroll = False
 
         Dim header As New Panel With {
             .Location = New Point(25, 12),
@@ -184,13 +183,13 @@ Public Class ShowcasePreviewForm
 
         Dim gallery As New FlowLayoutPanel With {
             .Location = New Point(25, 152),
-            .Size = New Size(970, 460),
+            .Size = New Size(Math.Max(620, Me.ClientSize.Width - 50), Math.Max(320, Me.ClientSize.Height - 190)),
             .BackColor = Cream,
             .AutoScroll = True,
             .WrapContents = True,
             .FlowDirection = FlowDirection.LeftToRight,
-            .Padding = New Padding(0, 0, 8, 12),
-            .Anchor = AnchorStyles.Top Or AnchorStyles.Left
+            .Padding = New Padding(4, 4, 12, 18),
+            .Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         }
 
         Dim propertyItems As List(Of PropertyInfo) = BuildProperties()
@@ -219,16 +218,16 @@ Public Class ShowcasePreviewForm
 
     Private Sub AddPropertyCard(gallery As FlowLayoutPanel, item As PropertyInfo)
         Dim card As New Panel With {
-            .Size = New Size(300, 365),
+            .Size = New Size(280, 350),
             .BackColor = CardColor,
-            .Margin = New Padding(0, 0, 18, 18),
+            .Margin = New Padding(0, 0, 12, 16),
             .Padding = New Padding(0),
             .Cursor = Cursors.Hand
         }
 
         Dim photo As New PictureBox With {
             .Location = New Point(0, 0),
-            .Size = New Size(300, 178),
+            .Size = New Size(280, 170),
             .SizeMode = PictureBoxSizeMode.Zoom,
             .BackColor = Color.FromArgb(232, 222, 210),
             .Cursor = Cursors.Hand
@@ -241,8 +240,8 @@ Public Class ShowcasePreviewForm
 
         Dim tag As New Label With {
             .Text = item.Category,
-            .Location = New Point(17, 190),
-            .Size = New Size(265, 20),
+            .Location = New Point(16, 182),
+            .Size = New Size(248, 20),
             .Font = New Font("Segoe UI", 8.0F, FontStyle.Bold),
             .ForeColor = Caramel,
             .Cursor = Cursors.Hand
@@ -250,8 +249,8 @@ Public Class ShowcasePreviewForm
 
         Dim name As New Label With {
             .Text = item.Title,
-            .Location = New Point(17, 214),
-            .Size = New Size(265, 31),
+            .Location = New Point(16, 205),
+            .Size = New Size(248, 31),
             .Font = New Font("Georgia", 12.0F, FontStyle.Bold),
             .ForeColor = TextDark,
             .Cursor = Cursors.Hand
@@ -259,8 +258,8 @@ Public Class ShowcasePreviewForm
 
         Dim details As New Label With {
             .Text = item.Description,
-            .Location = New Point(17, 250),
-            .Size = New Size(265, 65),
+            .Location = New Point(16, 241),
+            .Size = New Size(248, 65),
             .Font = New Font("Segoe UI", 8.5F),
             .ForeColor = Coffee,
             .Cursor = Cursors.Hand
@@ -268,8 +267,8 @@ Public Class ShowcasePreviewForm
 
         Dim action As New Label With {
             .Text = "VIEW PHOTO SHOWCASE  →",
-            .Location = New Point(17, 328),
-            .Size = New Size(265, 22),
+            .Location = New Point(16, 316),
+            .Size = New Size(248, 22),
             .Font = New Font("Segoe UI", 8.0F, FontStyle.Bold),
             .ForeColor = CoffeeDark,
             .Cursor = Cursors.Hand
@@ -332,63 +331,74 @@ Public Class PropertyShowcaseDetailForm
     End Sub
 
     Private Sub BuildWindow(category As String, title As String, description As String, sourceUrl As String, sourceName As String, photos As String()())
-
         Me.Text = "Casa Brew | " & category & " Showcase"
-        Me.StartPosition = FormStartPosition.CenterParent
+
         Dim workArea As Rectangle = Screen.FromPoint(Cursor.Position).WorkingArea
         Dim windowWidth As Integer = Math.Min(1120, Math.Max(700, workArea.Width - 40))
         Dim windowHeight As Integer = Math.Min(820, Math.Max(520, workArea.Height - 40))
 
+        Me.StartPosition = FormStartPosition.CenterParent
         Me.Size = New Size(windowWidth, windowHeight)
         Me.MinimumSize = New Size(Math.Min(700, windowWidth), Math.Min(520, windowHeight))
         Me.BackColor = Cream
         Me.Font = New Font("Segoe UI", 9.5F)
         Me.FormBorderStyle = FormBorderStyle.Sizable
 
+        ' A three-row layout reserves dedicated space for the heading and footer.
+        ' The photo gallery receives all remaining height and owns its scrollbars.
+        Dim layout As New TableLayoutPanel With {
+            .Dock = DockStyle.Fill,
+            .ColumnCount = 1,
+            .RowCount = 3,
+            .Margin = New Padding(0),
+            .Padding = New Padding(0),
+            .BackColor = Cream
+        }
+        layout.ColumnStyles.Add(New ColumnStyle(SizeType.Percent, 100.0F))
+        layout.RowStyles.Add(New RowStyle(SizeType.Absolute, 150.0F))
+        layout.RowStyles.Add(New RowStyle(SizeType.Percent, 100.0F))
+        layout.RowStyles.Add(New RowStyle(SizeType.Absolute, 58.0F))
+
         Dim header As New Panel With {
-            .Dock = DockStyle.Top,
-            .Height = 150,
+            .Dock = DockStyle.Fill,
             .BackColor = Cream,
-            .Padding = New Padding(28, 18, 28, 12)
+            .Padding = New Padding(28, 14, 28, 8),
+            .Margin = New Padding(0)
         }
 
         Dim eyebrow As New Label With {
             .Text = "CASA BREW  /  PROPERTY SHOWCASE",
-            .Dock = DockStyle.Top,
-            .Height = 23,
+            .Location = New Point(0, 0),
+            .Size = New Size(500, 22),
             .Font = New Font("Segoe UI", 8.0F, FontStyle.Bold),
             .ForeColor = Caramel
         }
 
         Dim heading As New Label With {
             .Text = title,
-            .Dock = DockStyle.Top,
-            .Height = 43,
-            .Font = New Font("Georgia", 21.0F, FontStyle.Bold),
+            .Location = New Point(0, 23),
+            .Size = New Size(760, 39),
+            .Font = New Font("Georgia", 20.0F, FontStyle.Bold),
             .ForeColor = TextDark
         }
 
         Dim intro As New Label With {
             .Text = description,
-            .Dock = DockStyle.Top,
-            .Height = 38,
+            .Location = New Point(0, 65),
+            .Size = New Size(900, 38),
             .Font = New Font("Segoe UI", 9.0F),
             .ForeColor = Coffee
         }
 
         Dim count As New Label With {
             .Text = photos.Length.ToString() & " PHOTO ANGLES  •  " & category,
-            .Dock = DockStyle.Top,
-            .Height = 22,
+            .Location = New Point(0, 108),
+            .Size = New Size(700, 22),
             .Font = New Font("Segoe UI", 8.0F, FontStyle.Bold),
             .ForeColor = MutedText
         }
 
-        header.Controls.Add(count)
-        header.Controls.Add(intro)
-        header.Controls.Add(heading)
-        header.Controls.Add(eyebrow)
-        Me.Controls.Add(header)
+        header.Controls.AddRange(New Control() {eyebrow, heading, intro, count})
 
         Dim gallery As New FlowLayoutPanel With {
             .Dock = DockStyle.Fill,
@@ -396,27 +406,26 @@ Public Class PropertyShowcaseDetailForm
             .AutoScroll = True,
             .WrapContents = True,
             .FlowDirection = FlowDirection.LeftToRight,
-            .Padding = New Padding(24, 8, 24, 24)
+            .Padding = New Padding(24, 12, 24, 24),
+            .Margin = New Padding(0)
         }
 
         For Each photoInfo As String() In photos
             AddPhotoTile(gallery, photoInfo(0), photoInfo(1))
         Next
 
-        Me.Controls.Add(gallery)
-        gallery.BringToFront()
-
         Dim footer As New Panel With {
-            .Dock = DockStyle.Bottom,
-            .Height = 54,
+            .Dock = DockStyle.Fill,
+            .Height = 58,
             .BackColor = CardColor,
-            .Padding = New Padding(24, 8, 24, 8)
+            .Padding = New Padding(24, 8, 24, 8),
+            .Margin = New Padding(0)
         }
 
         Dim source As New LinkLabel With {
             .Text = sourceName.ToUpperInvariant() & "  ↗",
-            .Location = New Point(25, 17),
-            .Size = New Size(260, 22),
+            .Location = New Point(25, 18),
+            .Size = New Size(420, 22),
             .Font = New Font("Segoe UI", 8.0F, FontStyle.Bold),
             .LinkColor = Caramel,
             .ActiveLinkColor = CoffeeDark
@@ -434,7 +443,7 @@ Public Class PropertyShowcaseDetailForm
         Dim close As New Button With {
             .Text = "CLOSE SHOWCASE",
             .Size = New Size(150, 34),
-            .Location = New Point(footer.Width - 175, 10),
+            .Location = New Point(footer.ClientSize.Width - 175, 12),
             .Anchor = AnchorStyles.Top Or AnchorStyles.Right,
             .FlatStyle = FlatStyle.Flat,
             .BackColor = CoffeeDark,
@@ -444,23 +453,30 @@ Public Class PropertyShowcaseDetailForm
         }
         close.FlatAppearance.BorderSize = 0
         AddHandler close.Click, Sub(sender, e) Me.Close()
+        AddHandler footer.Resize,
+            Sub(sender, e)
+                close.Location = New Point(Math.Max(10, footer.ClientSize.Width - close.Width - 24), 12)
+            End Sub
 
         footer.Controls.Add(source)
         footer.Controls.Add(close)
-        Me.Controls.Add(footer)
-        footer.BringToFront()
+
+        layout.Controls.Add(header, 0, 0)
+        layout.Controls.Add(gallery, 0, 1)
+        layout.Controls.Add(footer, 0, 2)
+        Me.Controls.Add(layout)
     End Sub
 
     Private Sub AddPhotoTile(gallery As FlowLayoutPanel, imageUrl As String, caption As String)
         Dim tile As New Panel With {
-            .Size = New Size(500, 285),
+            .Size = New Size(480, 300),
             .BackColor = CardColor,
             .Margin = New Padding(0, 0, 18, 18)
         }
 
         Dim photo As New PictureBox With {
             .Location = New Point(0, 0),
-            .Size = New Size(500, 238),
+            .Size = New Size(480, 252),
             .SizeMode = PictureBoxSizeMode.Zoom,
             .BackColor = Color.FromArgb(232, 222, 210)
         }
@@ -488,8 +504,8 @@ Public Class PropertyShowcaseDetailForm
 
         Dim label As New Label With {
             .Text = caption,
-            .Location = New Point(18, 247),
-            .Size = New Size(464, 26),
+            .Location = New Point(18, 261),
+            .Size = New Size(444, 28),
             .Font = New Font("Georgia", 10.5F, FontStyle.Bold),
             .ForeColor = TextDark
         }
