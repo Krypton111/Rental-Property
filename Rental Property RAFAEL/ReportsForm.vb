@@ -838,7 +838,7 @@ Public Class ReportsForm
         Dim fields As String()
         Select Case reportTypeComboBox.SelectedIndex
             Case 0
-                fields = {"Property Type", "Status", "Payment", "Monthly Rent", "Security Deposit"}
+                fields = {"Type", "Status", "Payment", "Monthly Rent", "Security Deposit"}
             Case 1
                 fields = {"Tenant Name", "Property", "Type", "Lease Start", "Lease End", "Payment Status"}
             Case 2
