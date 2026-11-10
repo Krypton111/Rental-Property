@@ -1,5 +1,6 @@
 ﻿Imports System.Data
 Imports System.Drawing
+Imports System.Drawing.Printing
 Imports System.Windows.Forms
 Imports Microsoft.Data.SqlClient
 
@@ -48,6 +49,7 @@ Public Class PaymentsForm
     Private txtSearch As TextBox
     Private btnSearch As Button
     Private btnRefresh As Button
+    Private btnPrintReceipt As Button
 
     Private txtPaymentID As TextBox
     Private cboTenant As ComboBox
@@ -224,6 +226,19 @@ Public Class PaymentsForm
             )
 
         Me.Controls.Add(btnRefresh)
+
+        btnPrintReceipt =
+            CreateButton(
+                "Print Receipt",
+                New Point(605, 118),
+                New Size(135, 36),
+                CoffeeDark
+            )
+
+        Me.Controls.Add(btnPrintReceipt)
+
+        AddHandler btnPrintReceipt.Click,
+            AddressOf PrintReceiptClicked
 
 
         AddHandler btnSearch.Click,
@@ -1407,7 +1422,7 @@ Public Class PaymentsForm
                     "@PaymentStatus, " &
                     "@Notes, " &
                     "1" &
-                    ")"
+                    "); SELECT CAST(SCOPE_IDENTITY() AS INT);"
 
 
                 Using command As New SqlCommand(
@@ -1417,7 +1432,15 @@ Public Class PaymentsForm
 
                     AddParameters(command)
 
-                    command.ExecuteNonQuery()
+                    Dim newPaymentID As Object = command.ExecuteScalar()
+
+                    If newPaymentID Is Nothing OrElse IsDBNull(newPaymentID) Then
+                        Throw New InvalidOperationException(
+                            "The payment was saved, but its new payment ID could not be retrieved."
+                        )
+                    End If
+
+                    selectedPaymentID = Convert.ToInt32(newPaymentID)
 
                 End Using
 
@@ -1434,6 +1457,20 @@ Public Class PaymentsForm
 
             LoadPayments()
 
+            Try
+                CasaBrewReceiptPrinter.Preview(selectedPaymentID)
+            Catch receiptEx As Exception
+                MessageBox.Show(
+                    "The payment was saved successfully, but the receipt preview could not be opened." &
+                    Environment.NewLine &
+                    Environment.NewLine &
+                    receiptEx.Message,
+                    "Receipt Preview",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                )
+            End Try
+
             ClearFields()
 
 
@@ -1449,6 +1486,43 @@ Public Class PaymentsForm
                 MessageBoxIcon.Error
             )
 
+        End Try
+
+    End Sub
+
+
+    '==========================================================
+    ' PRINT / REPRINT RECEIPT
+    '==========================================================
+
+    Private Sub PrintReceiptClicked(
+        sender As Object,
+        e As EventArgs
+    )
+
+        If selectedPaymentID <= 0 Then
+            MessageBox.Show(
+                "Please select a payment record first.",
+                "Casa Brew",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            )
+            Return
+        End If
+
+        Try
+            CasaBrewReceiptPrinter.Preview(selectedPaymentID)
+
+        Catch ex As Exception
+            MessageBox.Show(
+                "Unable to prepare the payment receipt." &
+                Environment.NewLine &
+                Environment.NewLine &
+                ex.Message,
+                "Receipt Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error
+            )
         End Try
 
     End Sub
