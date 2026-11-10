@@ -297,7 +297,7 @@ Public Class ShowcasePreviewForm
     End Sub
 
     Private Sub OpenPropertyShowcase(item As PropertyInfo)
-        Dim detail As New PropertyShowcaseDetailForm(item)
+        Dim detail As New PropertyShowcaseDetailForm(item.Category, item.Title, item.Description, item.SourceUrl, item.SourceName, item.Gallery)
         Dim owner As Form = Me.FindForm()
         If owner IsNot Nothing Then
             detail.ShowDialog(owner)
@@ -318,17 +318,11 @@ Public Class PropertyShowcaseDetailForm
     Private ReadOnly TextDark As Color = Color.FromArgb(59, 48, 42)
     Private ReadOnly MutedText As Color = Color.FromArgb(130, 112, 98)
 
-    Public Sub New(item As Object)
-        BuildWindow(item)
+    Public Sub New(category As String, title As String, description As String, sourceUrl As String, sourceName As String, photos As String()())
+        BuildWindow(category, title, description, sourceUrl, sourceName, photos)
     End Sub
 
-    Private Sub BuildWindow(item As Object)
-        Dim category As String = CStr(CallByName(item, "Category", CallType.Get))
-        Dim title As String = CStr(CallByName(item, "Title", CallType.Get))
-        Dim description As String = CStr(CallByName(item, "Description", CallType.Get))
-        Dim sourceUrl As String = CStr(CallByName(item, "SourceUrl", CallType.Get))
-        Dim sourceName As String = CStr(CallByName(item, "SourceName", CallType.Get))
-        Dim photos As String()() = DirectCast(CallByName(item, "Gallery", CallType.Get), String()())
+    Private Sub BuildWindow(category As String, title As String, description As String, sourceUrl As String, sourceName As String, photos As String()())
 
         Me.Text = "Casa Brew | " & category & " Showcase"
         Me.StartPosition = FormStartPosition.CenterParent
@@ -407,7 +401,7 @@ Public Class PropertyShowcaseDetailForm
         }
 
         Dim source As New LinkLabel With {
-            .Text = "VIEW PHOTO SOURCE  ↗",
+            .Text = sourceName.ToUpperInvariant() & "  ↗",
             .Location = New Point(25, 17),
             .Size = New Size(260, 22),
             .Font = New Font("Segoe UI", 8.0F, FontStyle.Bold),
