@@ -15,6 +15,7 @@ Public Class MainForm
 
     Private btnDashboard As Button
     Private btnProperties As Button
+    Private btnShowcasePreview As Button
     Private btnTenants As Button
     Private btnPayments As Button
     Private btnReports As Button
@@ -233,6 +234,11 @@ Public Class MainForm
             "Properties"
         )
 
+        btnShowcasePreview =
+        CreateNavigationButton(
+            "Showcase preview"
+        )
+
         btnTenants =
         CreateNavigationButton(
             "Tenants"
@@ -274,20 +280,23 @@ Public Class MainForm
         btnProperties.Location =
         New Point(12, 177)
 
-        btnTenants.Location =
+        btnShowcasePreview.Location =
         New Point(12, 229)
 
-        btnPayments.Location =
+        btnTenants.Location =
         New Point(12, 281)
 
-        btnReports.Location =
+        btnPayments.Location =
         New Point(12, 333)
 
-        btnUsers.Location =
+        btnReports.Location =
         New Point(12, 385)
 
-        btnSettings.Location =
+        btnUsers.Location =
         New Point(12, 437)
+
+        btnSettings.Location =
+        New Point(12, 489)
 
         'Anchor logout to the bottom of the sidebar
         btnLogout.Anchor =
@@ -310,6 +319,8 @@ Public Class MainForm
         pnlNavigation.Controls.Add(btnDashboard)
 
         pnlNavigation.Controls.Add(btnProperties)
+
+        pnlNavigation.Controls.Add(btnShowcasePreview)
 
         pnlNavigation.Controls.Add(btnTenants)
 
@@ -385,6 +396,9 @@ Public Class MainForm
 
         AddHandler btnProperties.Click,
         AddressOf PropertiesClicked
+
+        AddHandler btnShowcasePreview.Click,
+        AddressOf ShowcasePreviewClicked
 
         AddHandler btnTenants.Click,
         AddressOf TenantsClicked
@@ -622,6 +636,25 @@ Public Class MainForm
         OpenPage(
             form,
             "Properties"
+        )
+
+    End Sub
+
+
+    '==========================================================
+    ' SHOWCASE PREVIEW BUTTON
+    '==========================================================
+
+    Private Sub ShowcasePreviewClicked(
+        sender As Object,
+        e As EventArgs
+    )
+
+        Dim form As New ShowcasePreviewForm()
+
+        OpenPage(
+            form,
+            "Showcase preview"
         )
 
     End Sub
