@@ -243,7 +243,7 @@ Public Class RecordFilterForm
                normalized = "paymentstatus" OrElse normalized = "paymentmethod" OrElse
                normalized = "type" OrElse normalized = "status" OrElse
                normalized = "payment" OrElse normalized = "method" OrElse
-               normalized = "property status"
+               normalized = "property status" OrElse normalized = "payment status"
     End Function
 
     Private Shared Function IsNumericType(dataType As Type) As Boolean
