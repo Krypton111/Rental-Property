@@ -45,6 +45,7 @@ Public Class TenantsForm
     Private txtSearch As TextBox
     Private btnSearch As Button
     Private btnRefresh As Button
+    Private btnFilter As Button
 
     Private txtTenantID As TextBox
     Private txtTenantName As TextBox
@@ -241,6 +242,12 @@ Public Class TenantsForm
             )
 
         Me.Controls.Add(btnPolicies)
+
+        btnFilter = CreateButton("Filter", New Point(795, 118), New Size(110, 36), Coffee)
+        RecordFilterForm.StyleFilterButton(btnFilter)
+        Me.Controls.Add(btnFilter)
+
+        AddHandler btnFilter.Click, AddressOf FilterClicked
 
         AddHandler btnSearch.Click,
             AddressOf SearchClicked
@@ -1736,6 +1743,28 @@ Public Class TenantsForm
 
         End Try
 
+    End Sub
+
+
+    '==========================================================
+    ' ADVANCED FILTER
+    '==========================================================
+
+    Private Sub FilterClicked(sender As Object, e As EventArgs)
+        Dim table As DataTable = RecordFilterForm.GetSourceTable(dgvTenants.DataSource)
+        If table Is Nothing Then Return
+
+        Dim fields As String() = {
+            "TenantName", "ContactNumber", "Email", "Address", "PropertyName",
+            "LeaseStartDate", "LeaseEndDate", "PaymentStatus"
+        }
+
+        Using dialog As New RecordFilterForm(table, "Filter Tenants", fields)
+            If dialog.ShowDialog(Me) <> DialogResult.OK Then Return
+            table.DefaultView.RowFilter = dialog.FilterExpression
+            dgvTenants.DataSource = table.DefaultView
+            FormatGrid()
+        End Using
     End Sub
 
 
