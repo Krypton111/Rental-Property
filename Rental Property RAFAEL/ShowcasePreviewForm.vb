@@ -116,11 +116,11 @@ Public Class ShowcasePreviewForm
             .SourceName = "Unsplash · Commercial spaces",
             .Gallery = New String()() {
                 New String() {ImageUrl("photo-1441986300917-64674bd600d8"), "Retail storefront"},
-                New String() {ImageUrl("photo-1604719312566-8912e9c8a213"), "Retail floor and displays"},
+                New String() {ImageUrl("photo-1771033834141-023d630b3965"), "Retail floor and displays"},
                 New String() {ImageUrl("photo-1497366754035-f200968a6e72"), "Modern office workspace"},
                 New String() {ImageUrl("photo-1497366216548-37526070297c"), "Collaborative work area"},
                 New String() {ImageUrl("photo-1497366811353-6870744d04b2"), "Office meeting space"},
-                New String() {ImageUrl("photo-1505404483900-7f6e5b1f2d5a"), "Business reception area"}
+                New String() {ImageUrl("photo-1758448500688-3ababa93fd67"), "Business reception area"}
             },
             .Captions = New String() {"Retail storefront", "Retail floor and displays", "Modern office workspace", "Collaborative work area", "Office meeting space", "Business reception area"}
         })
