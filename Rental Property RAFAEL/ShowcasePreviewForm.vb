@@ -191,8 +191,15 @@ Public Class ShowcasePreviewForm
             .Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         }
 
-        For Each item As PropertyInfo In BuildProperties()
+        Dim propertyItems As List(Of PropertyInfo) = BuildProperties()
+        For index As Integer = 0 To propertyItems.Count - 1
+            Dim item As PropertyInfo = propertyItems(index)
             AddPropertyCard(gallery, item)
+
+            ' Force the first three cards onto row one and the remaining two onto row two.
+            If index = 2 Then
+                gallery.SetFlowBreak(gallery.Controls(gallery.Controls.Count - 1), True)
+            End If
         Next
 
         Me.Controls.Add(gallery)
